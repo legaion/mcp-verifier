@@ -1,0 +1,15 @@
+{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+  "name": "com.legaion/verifier",
+  "title": "LEGAION Verifier",
+  "description": "Checks legal citations against the official registers they should come from, and records which register was queried, at what address, and at what time.",
+  "repository": {
+    "url": "https://github.com/legaion/mcp-verifier",
+    "source": "github"
+  },
+  "version": "1.0.0",
+  "websiteUrl": "https://www.legaion.com",
+  "remotes": [
+    { "type": "streamable-http", "url": "https://mcp.legaion.com" }
+  ]
+}
