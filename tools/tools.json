@@ -1,0 +1,79 @@
+{
+  "server": {
+    "name": "com.legaion/verifier",
+    "title": "LEGAION Verifier",
+    "url": "https://mcp.legaion.com",
+    "transport": "streamable-http",
+    "auth": "oauth2.1 (authorization_code + PKCE, dynamic client registration)",
+    "metadata": {
+      "protected_resource": "https://mcp.legaion.com/.well-known/oauth-protected-resource",
+      "authorization_server": "https://mcp.legaion.com/.well-known/oauth-authorization-server"
+    }
+  },
+  "tools": [
+    {
+      "name": "verifier_engine",
+      "annotations": { "readOnlyHint": true, "destructiveHint": false, "idempotentHint": true, "openWorldHint": true },
+      "description": "Verifies legal citations and claims in a document. Returns a list of claims with verdicts (verified/unverified/fabricated/unknown), sources (ISAP/EUR-Lex/SAOS URL + fetched_at), an overall verdict and reasoning. Runs under the signed-in user's permissions.",
+      "inputSchema": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["documentContent"],
+        "properties": {
+          "documentContent": { "type": "string", "minLength": 1, "description": "Full text of the document to verify (plain text or markdown)." },
+          "documentType": { "type": "string", "description": "Document type, e.g. 'pismo procesowe', 'umowa', 'opinia prawna'." },
+          "documentName": { "type": "string", "maxLength": 200, "description": "Working name shown next to the case (content is not stored)." },
+          "caseId": { "type": "string", "format": "uuid", "description": "LEGAION case id. If given, the verification result (without document content) is attached to the case." },
+          "outputLanguage": { "type": "string", "enum": ["pl", "en"], "description": "Language of reasoning in the response (default: pl)." }
+        }
+      }
+    },
+    {
+      "name": "deep_xray",
+      "annotations": { "readOnlyHint": true, "destructiveHint": false, "idempotentHint": true, "openWorldHint": true },
+      "description": "Risk audit of a document (same engine as the LEGAION panel). Returns risks by level (critical/high/medium/low), clauses with status, recommendations and a numeric score. Mode 'klauzule_abuzywne' adds matches against the UOKiK register of abusive clauses with entry number, URL and fetch timestamp; without a confirmed fetch the status stays 'unconfirmed'.",
+      "inputSchema": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["documentContent"],
+        "properties": {
+          "documentContent": { "type": "string", "minLength": 1, "description": "Full text of the document to analyse (plain text or markdown)." },
+          "documentType": { "type": "string", "enum": ["umowa", "regulamin", "wzorzec konsumencki"], "description": "Document kind (default: umowa)." },
+          "analysisMode": { "type": "string", "enum": ["standard", "klauzule_abuzywne"], "description": "'standard' = full risk audit; 'klauzule_abuzywne' = audit + UOKiK register check." },
+          "outputLanguage": { "type": "string", "enum": ["pl", "en"], "description": "Language of descriptions (default: pl)." }
+        }
+      }
+    },
+    {
+      "name": "list_cases",
+      "annotations": { "readOnlyHint": true, "destructiveHint": false, "idempotentHint": true, "openWorldHint": false },
+      "description": "List the signed-in user's LEGAION cases. Optionally filter by status. Runs under the user's row-level permissions.",
+      "inputSchema": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "status": { "type": "string", "description": "Filter by case status, e.g. 'active', 'in_court'." },
+          "limit": { "type": "integer", "minimum": 1, "maximum": 100, "description": "Max rows (default 25)." }
+        }
+      }
+    },
+    {
+      "name": "list_clients",
+      "annotations": { "readOnlyHint": true, "destructiveHint": false, "idempotentHint": true, "openWorldHint": false },
+      "description": "List the signed-in user's LEGAION clients (company, contact person, email). Runs under the user's row-level permissions.",
+      "inputSchema": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "limit": { "type": "integer", "minimum": 1, "maximum": 100, "description": "Max rows (default 25)." }
+        }
+      }
+    },
+    {
+      "name": "whoami",
+      "annotations": { "readOnlyHint": true, "destructiveHint": false, "idempotentHint": true, "openWorldHint": false },
+      "description": "Return the signed-in LEGAION user's id, email and OAuth client id. Use to verify connectivity.",
+      "inputSchema": { "type": "object", "properties": {} }
+    }
+  ]
+}
